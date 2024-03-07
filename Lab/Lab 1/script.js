@@ -2,7 +2,7 @@ const playerNameForm = document.getElementById("player-name-form");
 const playerNameInput = document.getElementById("player-name");
 
 playerNameForm.addEventListener("submit", (event) => {
-  event.preventDefault(); // Ngăn chặn việc submit form theo mặc định
+  event.preventDefault(); 
 
   const playerName = playerNameInput.value.trim(); // Lấy tên người chơi và loại bỏ khoảng trắng
 
@@ -19,8 +19,6 @@ playerNameForm.addEventListener("submit", (event) => {
     return;
   }
 
-  // Lưu tên người chơi và chuyển sang trang tiếp theo
-  // Lưu ý: Thay thế `your-game-function(playerName)` bằng hàm thực tế của bạn để bắt đầu trò chơi
   yourGameFunction(playerName);
 });
 
@@ -40,3 +38,5 @@ function validatePlayerName(playerName) {
 
   return true;
 }
+
+
