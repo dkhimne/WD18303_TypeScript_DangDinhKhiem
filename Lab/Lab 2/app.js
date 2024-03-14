@@ -1,3 +1,4 @@
+"use strict";
 //bai 1
 // let number1:number= 5;
 // let number2:number= 2.8;
@@ -46,14 +47,14 @@ var Role;
     Role[Role["AUTHOR"] = 2] = "AUTHOR";
 })(Role || (Role = {}));
 ;
-var person = {
+const person = {
     name: 'Khim',
     age: 9,
     hobbies: ['Reading', 'Coding'],
     role: Role.ADMIN,
     roletuple: [2, 'author', 'admin']
 };
-var favouriteActive;
+let favouriteActive;
 favouriteActive = [5, 'Reading', true];
 if (person.role === Role.AUTHOR) {
     console.log('is author ');
@@ -62,7 +63,7 @@ person.roletuple.push('admin');
 person.roletuple[1] = '10';
 person.roletuple = [0, 'admin', 'user'];
 function combine(input1, input2, resultConversion) {
-    var result;
+    let result;
     if ((typeof input1 === 'number' && typeof input2 === 'number') || resultConversion === 'as-number') {
         result = +input1 + +input2; // Chuyển đổi cả hai thành số và thực hiện phép cộng
     }
@@ -71,11 +72,11 @@ function combine(input1, input2, resultConversion) {
     }
     return result;
 }
-var combineNumber = combine(30, 26, 'as-number');
+const combineNumber = combine(30, 26, 'as-number');
 console.log(combineNumber);
-var combineStringNumber = combine('30', '26', 'as-number');
+const combineStringNumber = combine('30', '26', 'as-number');
 console.log(combineStringNumber);
-var combineText = combine('I love coding', 'and reading', 'as-text');
+const combineText = combine('I love coding', 'and reading', 'as-text');
 console.log(combineText);
 var a = null;
 console.log(a);
@@ -84,8 +85,8 @@ var b;
 console.log(b);
 console.log(typeof (a));
 console.log('undeclaredVar');
-var userInput;
-var userName;
+let userInput;
+let userName;
 userInput = 5;
 userInput = 'TypeS';
 userName = 'userInput';

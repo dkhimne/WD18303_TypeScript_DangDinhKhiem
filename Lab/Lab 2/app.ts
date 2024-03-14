@@ -110,4 +110,4 @@ userInput = 'TypeS';
 userName = 'userInput';
 userName = <string> userInput;
 if(typeof userInput === 'string'){
-    userName = userInput;}
+    userName = userInput;} 

@@ -39,5 +39,3 @@ const playerNameForm = document.getElementById("player-name-form");
 
             return true;
         }
-
-
