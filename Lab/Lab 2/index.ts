@@ -11,9 +11,9 @@ const APP: HTMLElement | null = document.getElementById("pokemon");
 let html: string = '';
 
 for (let index = 0; index < 48; index++) {
-    const randomPokemonIndex = Math.floor(Math.random() * 48) + 1;
+    const randomPokemon = Math.floor(Math.random() * 48) + 1;
 
-    const data: Promise<any> = pokeApi(`https://pokeapi.co/api/v2/pokemon/${randomPokemonIndex}/`);
+    const data: Promise<any> = pokeApi(`https://pokeapi.co/api/v2/pokemon/${randomPokemon}/`);
 
     data.then(function(response: any) {
         html += `
@@ -24,7 +24,7 @@ for (let index = 0; index < 48; index++) {
             </div>
         </div>
         `;
-        APP?.innerHTML = html; // Di chuyển việc cập nhật HTML vào trong promise để đảm bảo dữ liệu đã được nhận trước khi cập nhật nội dung
+        APP?.innerHTML = html; 
     });
 }
 

@@ -19,8 +19,8 @@ console.log(Math.floor(Math.random() * 48) + 1);
 const APP = document.getElementById("pokemon");
 let html = '';
 for (let index = 0; index < 48; index++) {
-    const randomPokemonIndex = Math.floor(Math.random() * 48) + 1;
-    const data = pokeApi(`https://pokeapi.co/api/v2/pokemon/${randomPokemonIndex}/`);
+    const randomPokemon = Math.floor(Math.random() * 48) + 1;
+    const data = pokeApi(`https://pokeapi.co/api/v2/pokemon/${randomPokemon}/`);
     data.then(function (response) {
         html += `
         <div class="col-1 p-1">
@@ -30,7 +30,7 @@ for (let index = 0; index < 48; index++) {
             </div>
         </div>
         `;
-        APP === null || APP === void 0 ? void 0 : APP.innerHTML = html; // Di chuyển việc cập nhật HTML vào trong promise để đảm bảo dữ liệu đã được nhận trước khi cập nhật nội dung
+        APP === null || APP === void 0 ? void 0 : APP.innerHTML = html;
     });
 }
 const countdownMinutes = 10;
