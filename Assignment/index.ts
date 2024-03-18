@@ -1,32 +1,72 @@
-const pokemon: number = 48;
+const pokemonCount = 24;
 
 async function pokeApi(url: string): Promise<any> {
-    let data: Response = await fetch(url);
-    return await data.json();
+  let response = await fetch(url);
+  return await response.json();
 }
 
-console.log(Math.floor(Math.random() * 48) + 1);
+function generatePokemonUrls(count: number): string[] {
+  const urls = [];
+  for (let i = 1; i <= count; i++) {
+    urls.push(`https://pokeapi.co/api/v2/pokemon/${i}/`);
+  }
+  return urls;
+}
+
+async function fetchPokemonData(urls: string[]): Promise<any[]> {
+  const pokemonData = [];
+  for (const url of urls) {
+    pokemonData.push(await pokeApi(url));
+  }
+  return pokemonData;
+}
 
 const APP: HTMLElement | null = document.getElementById("pokemon");
-let html: string = '';
+let html = '';
 
-for (let index = 0; index < 48; index++) {
-    const randomPokemonIndex = Math.floor(Math.random() * 48) + 1;
+async function displayPokemon(data: any[]) {
+  // Shuffle the data array to randomize Pokemon positions
+  shuffleArray(data);
 
-    const data: Promise<any> = pokeApi(`https://pokeapi.co/api/v2/pokemon/${randomPokemonIndex}/`);
-
-    data.then(function(response: any) {
-        html += `
-        <div class="col-1 p-1">
-            <div class="card shadow position-relative">
-                <span class="position-absolute top-0">#${response.id}</span>
-                <img src="${response.sprites.front_default}" alt="${response.name}">
-            </div>
+  for (const pokemon of data) {
+    html += `
+      <div class="col-1 p-1">
+        <div class="card shadow position-relative">
+          <span class="position-absolute top-0">#${pokemon.id}</span>
+          <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
         </div>
-        `;
-        APP?.innerHTML = html; 
-    });
+      </div>
+    `;
+  }
+  APP?.innerHTML = html;
 }
+
+function shuffleArray(array: any[]) {
+  let currentIndex = array.length, randomIndex;
+
+  // While there are elements remaining to shuffle...
+  while (currentIndex !== 0) {
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+}
+
+(async () => {
+  // Fetch data for the first 24 Pokemon
+  const pokemonUrls = generatePokemonUrls(pokemonCount);
+  const pokemonData = await fetchPokemonData(pokemonUrls);
+
+  // Double the data (create a copy)
+  const doubledData = pokemonData.slice();
+
+  // Display the shuffled Pokemon
+  await displayPokemon(pokemonData);
+  await displayPokemon(doubledData);
+})();
+
 
 
 const countdownMinutes: number = 10;

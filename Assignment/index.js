@@ -8,31 +8,68 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const pokemon = 48;
+const pokemonCount = 24;
 function pokeApi(url) {
     return __awaiter(this, void 0, void 0, function* () {
-        let data = yield fetch(url);
-        return yield data.json();
+        let response = yield fetch(url);
+        return yield response.json();
     });
 }
-console.log(Math.floor(Math.random() * 48) + 1);
+function generatePokemonUrls(count) {
+    const urls = [];
+    for (let i = 1; i <= count; i++) {
+        urls.push(`https://pokeapi.co/api/v2/pokemon/${i}/`);
+    }
+    return urls;
+}
+function fetchPokemonData(urls) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pokemonData = [];
+        for (const url of urls) {
+            pokemonData.push(yield pokeApi(url));
+        }
+        return pokemonData;
+    });
+}
 const APP = document.getElementById("pokemon");
 let html = '';
-for (let index = 0; index < 48; index++) {
-    const randomPokemonIndex = Math.floor(Math.random() * 48) + 1;
-    const data = pokeApi(`https://pokeapi.co/api/v2/pokemon/${randomPokemonIndex}/`);
-    data.then(function (response) {
-        html += `
-        <div class="col-1 p-1">
-            <div class="card shadow position-relative">
-                <span class="position-absolute top-0">#${response.id}</span>
-                <img src="${response.sprites.front_default}" alt="${response.name}">
-            </div>
+function displayPokemon(data) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Shuffle the data array to randomize Pokemon positions
+        shuffleArray(data);
+        for (const pokemon of data) {
+            html += `
+      <div class="col-1 p-1">
+        <div class="card shadow position-relative">
+          <span class="position-absolute top-0">#${pokemon.id}</span>
+          <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
         </div>
-        `;
-        APP === null || APP === void 0 ? void 0 : APP.innerHTML = html; // Di chuyển việc cập nhật HTML vào trong promise để đảm bảo dữ liệu đã được nhận trước khi cập nhật nội dung
+      </div>
+    `;
+        }
+        APP === null || APP === void 0 ? void 0 : APP.innerHTML = html;
     });
 }
+function shuffleArray(array) {
+    let currentIndex = array.length, randomIndex;
+    // While there are elements remaining to shuffle...
+    while (currentIndex !== 0) {
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+}
+(() => __awaiter(void 0, void 0, void 0, function* () {
+    // Fetch data for the first 24 Pokemon
+    const pokemonUrls = generatePokemonUrls(pokemonCount);
+    const pokemonData = yield fetchPokemonData(pokemonUrls);
+    // Double the data (create a copy)
+    const doubledData = pokemonData.slice();
+    // Display the shuffled Pokemon
+    yield displayPokemon(pokemonData);
+    yield displayPokemon(doubledData);
+}))();
 const countdownMinutes = 10;
 let countdownSeconds = countdownMinutes * 60;
 let countdownInterval = null;
