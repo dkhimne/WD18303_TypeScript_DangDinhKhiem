@@ -138,6 +138,6 @@ console.log(employee1.name, Department.fiscalYear);
 
 const it = new ITDepartment('1', ['khim']);
 
-it.addEmployee('khim');
+it.addEmployee('khim'); // them vao mang
 it.addEmployee('KHiem');
 it.printEmployeeInformation();
