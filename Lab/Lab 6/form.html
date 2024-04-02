@@ -23,13 +23,13 @@
     <div class="row justify-content-center" id="demo">
       <div class="col-md-6 shadow p-4 rounded">
         <h1 class="text-center mb-4">Nhập tên người chơi</h1>
-        <form action="index.html" id="player-name-form" onsubmit="return validateForm()">
+        <form id="player-name-form" onsubmit="event.preventDefault()">
           <div class="form-group">
             <input type="text" class="form-control" id="player-name" name="player-name" placeholder="Nhập tên của bạn">
             <span id="player-name-error" class="text-danger"></span>
           </div>
           <br>
-          <button type="submit" class="btn btn-info">Bắt đầu</button>
+          <button type="submit" class="btn btn-info" id="submit">Bắt đầu</button>
         </form>
       </div>
     </div>

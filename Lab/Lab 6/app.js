@@ -121,28 +121,62 @@ console.log(pers);
 // const button = document.querySelector('button')!;
 // button.addEventListener('click', p.showMessage);
 //bat loi
-function validateForm() {
-    const playerNameInput = document.getElementById('player-name');
-    const playerNameError = document.getElementById('player-name-error');
-    if (!playerNameInput.value) {
-        playerNameError.textContent = 'Vui lòng nhập tên người chơi';
-        return false;
+function validator(constructor, propertyKey, descriptor) {
+    const originalMethod = descriptor.value;
+    descriptor.value = function (...args) {
+        const inputField = document.getElementById("player-name");
+        const errorMessage = document.getElementById("player-name-error");
+        if (inputField && inputField.value.trim() !== "") {
+            const inputValue = inputField.value.trim();
+            const minLength = 4;
+            const maxLength = 20;
+            const specialCharactersRegex = /[!@#$%^&*(),.?":{}|<>]/;
+            if (inputValue.length >= minLength && inputValue.length <= maxLength && !specialCharactersRegex.test(inputValue)) {
+                if (errorMessage) {
+                    errorMessage.textContent = "";
+                }
+                return originalMethod.apply(this, args);
+            }
+            else {
+                let errorText = `Vui lòng nhập tên tài khoản từ ${minLength} đến ${maxLength} ký tự và không chứa kí tự đặc biệt!`;
+                if (errorMessage) {
+                    errorMessage.textContent = errorText;
+                }
+                return null;
+            }
+        }
+        else {
+            if (errorMessage) {
+                errorMessage.textContent = "Vui lòng nhập tên tài khoản!";
+            }
+            return null;
+        }
+    };
+    return descriptor;
+}
+class GamePlayer {
+    static submitPlayerName(event) {
+        event.preventDefault();
+        const playerName = GamePlayer.PlayerName();
+        if (playerName) {
+            localStorage.setItem("playerName", playerName);
+            window.location.href = "index.html";
+        }
     }
-    const playerName = playerNameInput.value.trim();
-    const minLength = 5;
-    const maxLength = 20;
-    if (playerName.length < minLength) {
-        playerNameError.textContent = `Tên phải có ít nhất ${minLength} kí tự`;
-        return false;
+    static PlayerName() {
+        const inputField = document.getElementById("player-name");
+        if (inputField && inputField.value.trim() !== "") {
+            return inputField.value.trim();
+        }
+        else {
+            return null;
+        }
     }
-    if (playerName.length > maxLength) {
-        playerNameError.textContent = `Giới hạn đặt tên chỉ ${maxLength} kí tự`;
-        return false;
-    }
-    const specialCharactersRegex = /[!@#$%^&*(),.?":{}|<>]/;
-    if (specialCharactersRegex.test(playerName)) {
-        playerNameError.textContent = 'Tên không được chứa kí tự đặc biệt';
-        return false;
-    }
-    return true;
+}
+__decorate([
+    validator
+], GamePlayer, "submitPlayerName", null);
+const playerNameForm = document.getElementById("player-name-form");
+if (playerNameForm) {
+    playerNameForm.addEventListener("submit", GamePlayer.submitPlayerName);
 }
