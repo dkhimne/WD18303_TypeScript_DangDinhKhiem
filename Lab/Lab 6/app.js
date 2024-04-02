@@ -120,3 +120,29 @@ console.log(pers);
 // p.showMessage();
 // const button = document.querySelector('button')!;
 // button.addEventListener('click', p.showMessage);
+//bat loi
+function validateForm() {
+    const playerNameInput = document.getElementById('player-name');
+    const playerNameError = document.getElementById('player-name-error');
+    if (!playerNameInput.value) {
+        playerNameError.textContent = 'Vui lòng nhập tên người chơi';
+        return false;
+    }
+    const playerName = playerNameInput.value.trim();
+    const minLength = 5;
+    const maxLength = 20;
+    if (playerName.length < minLength) {
+        playerNameError.textContent = `Tên phải có ít nhất ${minLength} kí tự`;
+        return false;
+    }
+    if (playerName.length > maxLength) {
+        playerNameError.textContent = `Giới hạn đặt tên chỉ ${maxLength} kí tự`;
+        return false;
+    }
+    const specialCharactersRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    if (specialCharactersRegex.test(playerName)) {
+        playerNameError.textContent = 'Tên không được chứa kí tự đặc biệt';
+        return false;
+    }
+    return true;
+}
