@@ -8,6 +8,41 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+//bat loi va save ten khi nhap thanh cong
+function validateForm() {
+    const playerNameInput = document.getElementById('player-name');
+    const playerName = playerNameInput.value.trim();
+    const playerNameError = document.getElementById('player-name-error');
+    if (playerName === '') {
+        playerNameError.innerText = 'Vui lòng nhập tên của bạn';
+        return false;
+    }
+    const minLength = 5;
+    const maxLength = 20;
+    if (playerName.length < minLength) {
+        playerNameError.textContent = `Tên phải có ít nhất ${minLength} kí tự`;
+        return false;
+    }
+    if (playerName.length > maxLength) {
+        playerNameError.textContent = `Giới hạn đặt tên chỉ ${maxLength} kí tự`;
+        return false;
+    }
+    const specialCharactersRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    if (specialCharactersRegex.test(playerName)) {
+        playerNameError.textContent = 'Tên không được chứa kí tự đặc biệt';
+        return false;
+    }
+    // Lưu tên người chơi vào sessionStorage
+    sessionStorage.setItem('playerName', playerName);
+    return true;
+}
+window.onload = function () {
+    const playerName = sessionStorage.getItem('playerName');
+    if (playerName) {
+        const playerNameElement = document.getElementById('player-name');
+        playerNameElement.innerText = playerName;
+    }
+};
 const pokemonCount = 24;
 function pokeApi(url) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -107,4 +142,3 @@ if (resetButton) {
         resetCountdown();
     });
 }
-// click hiện màu
