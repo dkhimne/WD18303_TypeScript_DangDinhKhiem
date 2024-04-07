@@ -78,14 +78,26 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+
+
+interface Pokemon {
+  id: number;
+  uniqueId: number; 
+  name: string;
+  sprites: {
+    front_default: string;
+  };
+}
+
+
 const pokemonCount: number = 24;
 let selectedPokemonId: number | null = null;
 let score: number = 0;
 let correctPokemonCount: number = 0;
 let colorTimeout: NodeJS.Timeout | null = null;
-let pokemonData: any[] = []; // Lưu trữ dữ liệu Pokemon
+let pokemonData: any[] = []; 
 let selectedPokemonIds: number[] = [];
-let matchedPokemonIds: number[] = []; // Lưu trữ ID của các Pokemon đã được khớp
+let matchedPokemonIds: number[] = []; 
 
 async function pokeApi(url: string): Promise<any> {
   let response = await fetch(url);
@@ -111,14 +123,13 @@ async function fetchPokemonData(urls: string[]): Promise<any[]> {
 const APP: HTMLElement | null = document.getElementById("pokemon");
 let html: string = '';
 
-async function displayPokemon(data: any[]): Promise<void> {
-  // Shuffle the data array to randomize Pokemon positions
+async function displayPokemon(data: Pokemon[]): Promise<void> {
   shuffleArray(data);
 
   for (const pokemon of data) {
     html += `
       <div class="col-1 p-1">
-        <div class="card shadow position-relative" id="pokemon-${pokemon.id}" onclick="handlePokemonClick(${pokemon.id})">
+        <div class="card shadow position-relative" id="pokemon-${pokemon.uniqueId}" onclick="handlePokemonClick(${pokemon.uniqueId}, '${pokemon.sprites.front_default}')">
           <span class="position-absolute top-0">#${pokemon.id}</span>
           <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
         </div>
@@ -127,6 +138,8 @@ async function displayPokemon(data: any[]): Promise<void> {
   }
   if (APP) APP.innerHTML = html;
 }
+
+
 
 function shuffleArray<T>(array: T[]): void {
   let currentIndex: number = array.length, randomIndex: number;
@@ -141,19 +154,24 @@ function shuffleArray<T>(array: T[]): void {
   }
 }
 
-function handlePokemonClick(pokemonId: number): void {
-  const selectedPokemon = document.getElementById(`pokemon-${pokemonId}`);
 
-  if (selectedPokemonIds.length < 2 && !selectedPokemonIds.includes(pokemonId) && !matchedPokemonIds.includes(pokemonId)) {
-    selectedPokemonIds.push(pokemonId);
 
-    const randomColor = getRandomColor();
+let firstSelectedImage: string | null = null;
+
+function handlePokemonClick(uniqueId: number, imageSrc: string): void {
+  const selectedPokemon = document.getElementById(`pokemon-${uniqueId}`);
+
+  if (!selectedPokemonIds.includes(uniqueId) && !matchedPokemonIds.includes(uniqueId)) {
+    selectedPokemonIds.push(uniqueId);
+
     if (selectedPokemon) {
+      const randomColor = getRandomColor();
       (selectedPokemon as HTMLElement).style.backgroundColor = randomColor;
-      colorTimeout = setTimeout(() => resetColor(pokemonId), 1000); // Reset color after 1 second if not a match
     }
 
-    if (selectedPokemonIds.length === 2) {
+    if (selectedPokemonIds.length === 1) {
+      firstSelectedImage = imageSrc;
+    } else if (selectedPokemonIds.length === 2) {
       const [firstPokemonId, secondPokemonId] = selectedPokemonIds;
       const firstPokemon = document.getElementById(`pokemon-${firstPokemonId}`);
       const secondPokemon = document.getElementById(`pokemon-${secondPokemonId}`);
@@ -163,34 +181,30 @@ function handlePokemonClick(pokemonId: number): void {
         const secondPokemonImgSrc = (secondPokemon.querySelector('img') as HTMLImageElement).src;
 
         if (firstPokemonImgSrc === secondPokemonImgSrc && firstPokemonId !== secondPokemonId) {
-          // Matched
           matchedPokemonIds.push(firstPokemonId, secondPokemonId);
           correctPokemonCount += 2;
-          selectedPokemonIds = [];
 
-          // Apply the same random color to both matched cards
+          const randomColor = getRandomColor();
           (firstPokemon as HTMLElement).style.backgroundColor = randomColor;
           (secondPokemon as HTMLElement).style.backgroundColor = randomColor;
 
-          clearTimeout(colorTimeout!); // Clear timeout if matched
+          selectedPokemonIds = []; 
+          firstSelectedImage = null;
 
           if (correctPokemonCount === pokemonCount * 2) {
             alert("Bạn đã hoàn thành trò chơi!");
-            clearInterval(countdownInterval!); // Stop the countdown
+            clearInterval(countdownInterval!); 
             return;
           }
         } else {
           setTimeout(() => {
-            resetColor(firstPokemonId);
-            resetColor(secondPokemonId);
+            resetColor();
             selectedPokemonIds = [];
+            firstSelectedImage = null;
           }, 1000);
         }
       }
     }
-  } else if (selectedPokemonIds.length === 2) {
-    resetColor();
-    selectedPokemonIds = [];
   } else {
     alert("Chỉ được chọn mỗi ô một lần!");
   }
@@ -198,25 +212,45 @@ function handlePokemonClick(pokemonId: number): void {
 
 
 
-function resetColor(pokemonId?: number): void {
-  if (pokemonId) {
-    const selectedPokemon = document.getElementById(`pokemon-${pokemonId}`);
+function getRandomColor(): string {
+  const letters: string = "0123456789ABCDEF";
+  let color: string = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+
+function resetColor(): void {
+  for (const id of selectedPokemonIds) {
+    const selectedPokemon = document.getElementById(`pokemon-${id}`);
     if (selectedPokemon) {
       (selectedPokemon as HTMLElement).style.backgroundColor = '';
     }
-  } else {
-    for (const id of selectedPokemonIds) {
-      const selectedPokemon = document.getElementById(`pokemon-${id}`);
-      if (selectedPokemon) {
-        (selectedPokemon as HTMLElement).style.backgroundColor = '';
+  }
+
+  if (firstSelectedImage !== null) {
+    const selectedPokemons = document.querySelectorAll(`.card img[src='${firstSelectedImage}']`);
+    selectedPokemons.forEach(pokemon => {
+      const parentCard = pokemon.parentElement;
+      if (parentCard) {
+        (parentCard as HTMLElement).style.backgroundColor = '';
       }
-    }
+    });
+    firstSelectedImage = null;
   }
 }
+
 
 async function startGame() {
   const pokemonUrls: string[] = generatePokemonUrls(pokemonCount);
   const pokemonData: any[] = await fetchPokemonData(pokemonUrls);
+
+  let uniqueId = 1;
+  for (const pokemon of pokemonData) {
+    pokemon.uniqueId = uniqueId++;
+  }
 
   const doubledData: any[] = pokemonData.slice();
 
@@ -225,6 +259,7 @@ async function startGame() {
 
   startCountdown();
 }
+
 
 const startButton: HTMLElement | null = document.getElementById("start-button");
 if (startButton) {

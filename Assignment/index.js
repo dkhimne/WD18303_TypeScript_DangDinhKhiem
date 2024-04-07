@@ -85,9 +85,9 @@ let selectedPokemonId = null;
 let score = 0;
 let correctPokemonCount = 0;
 let colorTimeout = null;
-let pokemonData = []; // Lưu trữ dữ liệu Pokemon
+let pokemonData = [];
 let selectedPokemonIds = [];
-let matchedPokemonIds = []; // Lưu trữ ID của các Pokemon đã được khớp
+let matchedPokemonIds = [];
 function pokeApi(url) {
     return __awaiter(this, void 0, void 0, function* () {
         let response = yield fetch(url);
@@ -114,12 +114,11 @@ const APP = document.getElementById("pokemon");
 let html = '';
 function displayPokemon(data) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Shuffle the data array to randomize Pokemon positions
         shuffleArray(data);
         for (const pokemon of data) {
             html += `
       <div class="col-1 p-1">
-        <div class="card shadow position-relative" id="pokemon-${pokemon.id}" onclick="handlePokemonClick(${pokemon.id})">
+        <div class="card shadow position-relative" id="pokemon-${pokemon.uniqueId}" onclick="handlePokemonClick(${pokemon.uniqueId}, '${pokemon.sprites.front_default}')">
           <span class="position-absolute top-0">#${pokemon.id}</span>
           <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
         </div>
@@ -140,16 +139,19 @@ function shuffleArray(array) {
         [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
     }
 }
-function handlePokemonClick(pokemonId) {
-    const selectedPokemon = document.getElementById(`pokemon-${pokemonId}`);
-    if (selectedPokemonIds.length < 2 && !selectedPokemonIds.includes(pokemonId) && !matchedPokemonIds.includes(pokemonId)) {
-        selectedPokemonIds.push(pokemonId);
-        const randomColor = getRandomColor();
+let firstSelectedImage = null;
+function handlePokemonClick(uniqueId, imageSrc) {
+    const selectedPokemon = document.getElementById(`pokemon-${uniqueId}`);
+    if (!selectedPokemonIds.includes(uniqueId) && !matchedPokemonIds.includes(uniqueId)) {
+        selectedPokemonIds.push(uniqueId);
         if (selectedPokemon) {
+            const randomColor = getRandomColor();
             selectedPokemon.style.backgroundColor = randomColor;
-            colorTimeout = setTimeout(() => resetColor(pokemonId), 1000); // Reset color after 1 second if not a match
         }
-        if (selectedPokemonIds.length === 2) {
+        if (selectedPokemonIds.length === 1) {
+            firstSelectedImage = imageSrc;
+        }
+        else if (selectedPokemonIds.length === 2) {
             const [firstPokemonId, secondPokemonId] = selectedPokemonIds;
             const firstPokemon = document.getElementById(`pokemon-${firstPokemonId}`);
             const secondPokemon = document.getElementById(`pokemon-${secondPokemonId}`);
@@ -157,58 +159,67 @@ function handlePokemonClick(pokemonId) {
                 const firstPokemonImgSrc = firstPokemon.querySelector('img').src;
                 const secondPokemonImgSrc = secondPokemon.querySelector('img').src;
                 if (firstPokemonImgSrc === secondPokemonImgSrc && firstPokemonId !== secondPokemonId) {
-                    // Matched
                     matchedPokemonIds.push(firstPokemonId, secondPokemonId);
                     correctPokemonCount += 2;
-                    selectedPokemonIds = [];
-                    // Apply the same random color to both matched cards
+                    const randomColor = getRandomColor();
                     firstPokemon.style.backgroundColor = randomColor;
                     secondPokemon.style.backgroundColor = randomColor;
-                    clearTimeout(colorTimeout); // Clear timeout if matched
+                    selectedPokemonIds = [];
+                    firstSelectedImage = null;
                     if (correctPokemonCount === pokemonCount * 2) {
                         alert("Bạn đã hoàn thành trò chơi!");
-                        clearInterval(countdownInterval); // Stop the countdown
+                        clearInterval(countdownInterval);
                         return;
                     }
                 }
                 else {
                     setTimeout(() => {
-                        resetColor(firstPokemonId);
-                        resetColor(secondPokemonId);
+                        resetColor();
                         selectedPokemonIds = [];
+                        firstSelectedImage = null;
                     }, 1000);
                 }
             }
         }
     }
-    else if (selectedPokemonIds.length === 2) {
-        resetColor();
-        selectedPokemonIds = [];
-    }
     else {
         alert("Chỉ được chọn mỗi ô một lần!");
     }
 }
-function resetColor(pokemonId) {
-    if (pokemonId) {
-        const selectedPokemon = document.getElementById(`pokemon-${pokemonId}`);
+function getRandomColor() {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+function resetColor() {
+    for (const id of selectedPokemonIds) {
+        const selectedPokemon = document.getElementById(`pokemon-${id}`);
         if (selectedPokemon) {
             selectedPokemon.style.backgroundColor = '';
         }
     }
-    else {
-        for (const id of selectedPokemonIds) {
-            const selectedPokemon = document.getElementById(`pokemon-${id}`);
-            if (selectedPokemon) {
-                selectedPokemon.style.backgroundColor = '';
+    if (firstSelectedImage !== null) {
+        const selectedPokemons = document.querySelectorAll(`.card img[src='${firstSelectedImage}']`);
+        selectedPokemons.forEach(pokemon => {
+            const parentCard = pokemon.parentElement;
+            if (parentCard) {
+                parentCard.style.backgroundColor = '';
             }
-        }
+        });
+        firstSelectedImage = null;
     }
 }
 function startGame() {
     return __awaiter(this, void 0, void 0, function* () {
         const pokemonUrls = generatePokemonUrls(pokemonCount);
         const pokemonData = yield fetchPokemonData(pokemonUrls);
+        let uniqueId = 1;
+        for (const pokemon of pokemonData) {
+            pokemon.uniqueId = uniqueId++;
+        }
         const doubledData = pokemonData.slice();
         yield displayPokemon(pokemonData);
         yield displayPokemon(doubledData);
