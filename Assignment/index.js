@@ -142,7 +142,7 @@ function shuffleArray(array) {
 }
 function handlePokemonClick(pokemonId) {
     const selectedPokemon = document.getElementById(`pokemon-${pokemonId}`);
-    if (selectedPokemonIds.length < 2 && !selectedPokemonIds.includes(pokemonId)) {
+    if (selectedPokemonIds.length < 2 && !selectedPokemonIds.includes(pokemonId) && !matchedPokemonIds.includes(pokemonId)) {
         selectedPokemonIds.push(pokemonId);
         const randomColor = getRandomColor();
         if (selectedPokemon) {
@@ -167,17 +167,21 @@ function handlePokemonClick(pokemonId) {
                     clearTimeout(colorTimeout); // Clear timeout if matched
                     if (correctPokemonCount === pokemonCount * 2) {
                         alert("Bạn đã hoàn thành trò chơi!");
+                        clearInterval(countdownInterval); // Stop the countdown
                         return;
                     }
                 }
                 else {
-                    // Not a match - reset color after timeout
+                    setTimeout(() => {
+                        resetColor(firstPokemonId);
+                        resetColor(secondPokemonId);
+                        selectedPokemonIds = [];
+                    }, 1000);
                 }
             }
         }
     }
     else if (selectedPokemonIds.length === 2) {
-        // Reset color if clicked more than 2 times
         resetColor();
         selectedPokemonIds = [];
     }
@@ -185,23 +189,27 @@ function handlePokemonClick(pokemonId) {
         alert("Chỉ được chọn mỗi ô một lần!");
     }
 }
-function resetColor() {
-    for (const id of selectedPokemonIds) {
-        const selectedPokemon = document.getElementById(`pokemon-${id}`);
+function resetColor(pokemonId) {
+    if (pokemonId) {
+        const selectedPokemon = document.getElementById(`pokemon-${pokemonId}`);
         if (selectedPokemon) {
             selectedPokemon.style.backgroundColor = '';
         }
     }
-    selectedPokemonIds = [];
+    else {
+        for (const id of selectedPokemonIds) {
+            const selectedPokemon = document.getElementById(`pokemon-${id}`);
+            if (selectedPokemon) {
+                selectedPokemon.style.backgroundColor = '';
+            }
+        }
+    }
 }
 function startGame() {
     return __awaiter(this, void 0, void 0, function* () {
-        // Fetch data for the first 24 Pokemon
         const pokemonUrls = generatePokemonUrls(pokemonCount);
         const pokemonData = yield fetchPokemonData(pokemonUrls);
-        // Double the data (create a copy)
         const doubledData = pokemonData.slice();
-        // Display the shuffled Pokemon
         yield displayPokemon(pokemonData);
         yield displayPokemon(doubledData);
         startCountdown();
@@ -224,6 +232,13 @@ function updateCountdown() {
     if (countdownSeconds <= 0) {
         clearInterval(countdownInterval);
         alert("Hết thời gian!");
+        // Check for win condition
+        if (correctPokemonCount === pokemonCount * 2) {
+            alert("Bạn đã hoàn thành trò chơi!");
+        }
+        else {
+            alert("Bạn đã thua!");
+        }
         return;
     }
     const minutes = Math.floor(countdownSeconds / 60);
